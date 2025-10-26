@@ -1,35 +1,46 @@
-function add(x, y) {
-	return x + y;
-}
+function operate() {
+	let displayArray = display.textContent.split(/([+\-*/])/);
 
-function subtract(x, y) {
-	return x - y;
-}
+   const operations = {
+      "+": (a, b) => a + b,
+      "-": (a, b) => a - b,
+      "*": (a, b) => a * b,
+      "/": (a, b) => a / b,
+   }
 
-function multiply(x, y) {
-	return x * y;
-}
+   function processOperator(op) {
+      while (displayArray.includes(op)) {
+         const index = displayArray.indexOf(op);
+         const left = Number(displayArray[index - 1]);
+         const right = Number(displayArray[index + 1]);
+         const result = operations[op](left, right);
+         displayArray.splice(index - 1, 3, result);
+      }
+   }
 
-function divide(x, y) {
-	return x / y;
-}
+   while (displayArray.includes("*") || displayArray.includes("/")) {
+      const multIndex = displayArray.indexOf("*");
+      const divIndex = displayArray.indexOf("/");
 
-let num1;
-let operator;
-let num2;
+      if (divIndex === -1 || (multIndex !== -1 && multIndex < divIndex)) {
+         processOperator("*");
+      } else {
+         processOperator("/");
+      }
+   }
 
-function operate(x, op, y) {
-	if (op === "+") {
-		add(x, y);
-	} else if (op === "-") {
-		subtract(x, y);
-	} else if (op === "*") {
-		multiply(x, y);
-	} else if (op === "/") {
-		divide(x, y);
-	} else {
-		alert("Error");
-	}
+   while (displayArray.includes("+") || displayArray.includes("-")) {
+      const addIndex = displayArray.indexOf("+");
+      const subIndex = displayArray.indexOf("-");
+
+      if (subIndex === -1 || (addIndex !== -1 && addIndex < subIndex)) {
+         processOperator("+");
+      } else {
+         processOperator("-");
+      }
+   }
+
+	display.textContent = displayArray[0];
 }
 
 const display = document.querySelector("#display");
@@ -58,7 +69,7 @@ const buttonMap = {
 const actionMap = {
 	CButton: () => (display.textContent = display.textContent.slice(0, -1)),
 	ACButton: () => (display.textContent = ""),
-	equalButton: () => operate(num1, operator, num2),
+	equalButton: () => operate(),
 };
 
 buttons.addEventListener("click", (e) => {
