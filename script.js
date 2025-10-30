@@ -86,30 +86,54 @@ const actionMap = {
 	},
 };
 
+function handleInput(value) {
+	const isOperator = /[+\-*/]/.test(value);
+	const isNumber = /[0-9]/.test(value);
+	const lastChar = display.textContent.slice(-1);
+
+	if (justCalculated) {
+		if (isNumber) {
+			display.textContent = value;
+		} else if (isOperator) {
+			if (/[+\-*/]/.test(lastChar)) return;
+			display.textContent += value;
+		}
+		justCalculated = false;
+	} else {
+		if (isOperator && /[+\-*/]/.test(lastChar)) return;
+
+		// Better decimal validation: check current number only
+		if (value === ".") {
+			const numbers = display.textContent.split(/[+\-*/]/);
+			const currentNumber = numbers[numbers.length - 1];
+			if (currentNumber.includes(".")) return;
+		}
+
+		display.textContent += value;
+	}
+}
+
 buttons.addEventListener("click", (e) => {
 	const { id } = e.target;
 	const value = buttonMap[id];
 
 	if (value) {
-		const isOperator = /[+\-*/]/.test(value);
-		const isNumber = /[0-9]/.test(value);
-		const lastChar = display.textContent.slice(-1);
-
-		if (justCalculated) {
-			if (isNumber) {
-				display.textContent = value;
-			} else if (isOperator) {
-				if (/[+\-*/]/.test(lastChar)) return;
-
-				display.textContent += value;
-			}
-			justCalculated = false;
-		} else {
-			if (isOperator && /[+\-*/]/.test(lastChar)) return;
-         if (value === "." && /\.\d*$/.test(display.textContent)) return;
-			display.textContent += value;
-		}
+		handleInput(value);
 	} else if (actionMap[id]) {
 		actionMap[id]();
+	}
+});
+
+document.addEventListener("keydown", (e) => {
+	const key = e.key;
+
+	if (/[0-9+\-*/.]/.test(key)) {
+		handleInput(key);
+	} else if (key === "Enter") {
+		actionMap.equalButton();
+	} else if (key === "Backspace") {
+		actionMap.CButton();
+	} else if (key === "Escape") {
+		actionMap.ACButton();
 	}
 });
