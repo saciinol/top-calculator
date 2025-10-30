@@ -1,46 +1,55 @@
 function operate() {
 	let displayArray = display.textContent.split(/([+\-*/])/);
 
-   const operations = {
-      "+": (a, b) => a + b,
-      "-": (a, b) => a - b,
-      "*": (a, b) => a * b,
-      "/": (a, b) => a / b,
-   }
+	const operations = {
+		"+": (a, b) => a + b,
+		"-": (a, b) => a - b,
+		"*": (a, b) => a * b,
+		"/": (a, b) => a / b,
+	};
 
-   function processOperator(op) {
-      while (displayArray.includes(op)) {
-         const index = displayArray.indexOf(op);
-         const left = Number(displayArray[index - 1]);
-         const right = Number(displayArray[index + 1]);
-         const result = operations[op](left, right);
-         displayArray.splice(index - 1, 3, result);
-      }
-   }
+	function processOperator(op) {
+		while (displayArray.includes(op)) {
+			const index = displayArray.indexOf(op);
+			const left = Number(displayArray[index - 1]);
+			const right = Number(displayArray[index + 1]);
 
-   while (displayArray.includes("*") || displayArray.includes("/")) {
-      const multIndex = displayArray.indexOf("*");
-      const divIndex = displayArray.indexOf("/");
+			if (op === "/" && right === 0) {
+				display.textContent = "Bruh no";
+				return false;
+			}
 
-      if (divIndex === -1 || (multIndex !== -1 && multIndex < divIndex)) {
-         processOperator("*");
-      } else {
-         processOperator("/");
-      }
-   }
+			const result = operations[op](left, right);
+			displayArray.splice(index - 1, 3, result);
+		}
+		return true;
+	}
 
-   while (displayArray.includes("+") || displayArray.includes("-")) {
-      const addIndex = displayArray.indexOf("+");
-      const subIndex = displayArray.indexOf("-");
+	while (displayArray.includes("*") || displayArray.includes("/")) {
+		const multIndex = displayArray.indexOf("*");
+		const divIndex = displayArray.indexOf("/");
 
-      if (subIndex === -1 || (addIndex !== -1 && addIndex < subIndex)) {
-         processOperator("+");
-      } else {
-         processOperator("-");
-      }
-   }
+		if (divIndex === -1 || (multIndex !== -1 && multIndex < divIndex)) {
+			if (!processOperator("*")) return;
+		} else {
+			if (!processOperator("/")) return;
+		}
+	}
 
-	display.textContent = displayArray[0];
+	while (displayArray.includes("+") || displayArray.includes("-")) {
+		const addIndex = displayArray.indexOf("+");
+		const subIndex = displayArray.indexOf("-");
+
+		if (subIndex === -1 || (addIndex !== -1 && addIndex < subIndex)) {
+			if (!processOperator("+")) return;
+		} else {
+			if (!processOperator("-")) return;
+		}
+	}
+
+	if (display.textContent !== "Bruh no") {
+		display.textContent = displayArray[0];
+	}
 }
 
 const display = document.querySelector("#display");
@@ -66,17 +75,39 @@ const buttonMap = {
 	divideButton: "/",
 };
 
+let justCalculated = false;
+
 const actionMap = {
 	CButton: () => (display.textContent = display.textContent.slice(0, -1)),
 	ACButton: () => (display.textContent = ""),
-	equalButton: () => operate(),
+	equalButton: () => {
+		operate();
+		justCalculated = true;
+	},
 };
 
 buttons.addEventListener("click", (e) => {
 	const { id } = e.target;
+	const value = buttonMap[id];
 
-	if (buttonMap[id]) {
-		display.textContent += buttonMap[id];
+	if (value) {
+		const isOperator = /[+\-*/]/.test(value);
+		const isNumber = /[0-9]/.test(value);
+		const lastChar = display.textContent.slice(-1);
+
+		if (justCalculated) {
+			if (isNumber) {
+				display.textContent = value;
+			} else if (isOperator) {
+				if (/[+\-*/]/.test(lastChar)) return;
+
+				display.textContent += value;
+			}
+			justCalculated = false;
+		} else {
+			if (isOperator && /[+\-*/]/.test(lastChar)) return;
+			display.textContent += value;
+		}
 	} else if (actionMap[id]) {
 		actionMap[id]();
 	}
