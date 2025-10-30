@@ -106,6 +106,7 @@ buttons.addEventListener("click", (e) => {
 			justCalculated = false;
 		} else {
 			if (isOperator && /[+\-*/]/.test(lastChar)) return;
+         if (value === "." && /\.\d*$/.test(display.textContent)) return;
 			display.textContent += value;
 		}
 	} else if (actionMap[id]) {
